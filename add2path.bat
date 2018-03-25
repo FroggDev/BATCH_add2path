@@ -30,15 +30,14 @@ REM description :
 REM -------------
 REM will add to path the list in argument
 
-REM Default List if nothing set as arguments
+REM Default List if nothing set as arguments (separated with space)
 set DefaultList=C:\dev\bin\git\bin C:\dev\bin\php C:\dev\bin\composer C:\dev\bin\ruby\bin C:\dev\bin\node
 
 REM GLOBAL CONFIG VARS
 REM List of folders to add to the PATH (Array separated by spaces !)
 REM ================================================================
 REM If bin path are passed as argument use them, else use LIST2ADD var
-if "%*"=="" (set LIST2ADD=%DefaultList%)
-else(set LIST2ADD=%*)
+if "%*"=="" ( set LIST2ADD=%DefaultList%) else ( set LIST2ADD=%* )
 REM
 REM default list = git, php, composer, ruby, node
 REM ================================================================
@@ -66,14 +65,31 @@ echo.
 REM STEP 2 : Formating informations
 REM -------------------------------
 REM Adding to path but check if already exist
+set /A Count=0
 (for %%a in (%LIST2ADD%) do (
-REM Doing concatenation to formatedPath var with list of path to add
-call set "formatedPath=%%formatedPath%%%%a;"
-REM removing path if already exist to not add it multiple times
-call set "originalPath=%%originalPath:%%a;=%%"
+	REM check if folder exit
+	IF EXIST %%a (
+		REM Doing concatenation to formatedPath var with list of path to add
+		call set "formatedPath=%%formatedPath%%%%a;"
+		REM removing path if already exist to not add it multiple times
+		call set "originalPath=%%originalPath:%%a;=%%"
+		set /A Count+=1 
+	) ELSE (
+		echo %%a not found, cannot be added to the PATH, skipping...
+	)
 ))
 
 REM STEP 3 : Updating the PATH
 REM --------------------------
+if %Count% GTR 0 (
 set PATH=%originalPath%%formatedPath%
 setx PATH %originalPath%%formatedPath%
+) else (
+echo.
+echo Result : Nothing to add to the PATH...
+)
+
+REM Make a pause
+echo. 
+pause
+echo. 
